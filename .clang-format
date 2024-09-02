@@ -18,3 +18,5 @@ AccessModifierOffset: -4
 # https://stackoverflow.com/a/65570148/13041067
 AlignOperands: true
 PenaltyBreakAssignment: 50
+
+QualifierAlignment: Right
