@@ -4,10 +4,11 @@
 
 #include "App/App.h"
 
-
 int main()
 {
     App::Initialize();
+    App::VertexSpecification();
+    App::CreateGraphicsPipeline();
     App::MainLoop();
     App::CleanUp();
 

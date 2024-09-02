@@ -1,16 +1,26 @@
 #pragma once
 
 #include "SDL2/SDL.h"
+#include "glad/glad.h"
+
+#define DEBUG
 
 namespace App {
 
-extern const int screenHeight; // NOLINT
-extern const int screenWidth; // NOLINT
+extern int const screenHeight; // NOLINT
+extern int const screenWidth;  // NOLINT
 
 extern SDL_Window *graphicsApplicationWindow; // NOLINT
-extern SDL_GLContext openGLContext; // NOLINT
+extern SDL_GLContext openGLContext;           // NOLINT
+
+extern GLuint vertexArrayObject;  // NOLINT
+extern GLuint vertexBufferObject; // NOLINT
+
+extern GLuint graphicsPipelineShaderProgram; // NOLINT
 
 void Initialize();
+void VertexSpecification();
+void CreateGraphicsPipeline();
 void MainLoop();
 void CleanUp();
 
