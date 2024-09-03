@@ -6,29 +6,39 @@
 
 #include "App/App.h"
 
-constexpr int App::screenHeight = 480;
-constexpr int App::screenWidth = 640;
+namespace App {
 
-SDL_Window *App::graphicsApplicationWindow = nullptr; // NOLINT
-SDL_GLContext App::openGLContext = nullptr;           // NOLINT
+struct NormalizedColor
+{
+    GLfloat r{};
+    GLfloat g{};
+    GLfloat b{};
+    GLfloat a{};
+};
+
+constexpr NormalizedColor bg = {0.0F, 0.0F, 1.F, 1.0F};
+
+constexpr int screenHeight = 480;
+constexpr int screenWidth = 640;
+
+SDL_Window *graphicsApplicationWindow = nullptr; // NOLINT
+SDL_GLContext openGLContext = nullptr;           // NOLINT
 
 // Vertex Array Object -- VAO
 // It encapsulates all of the items needed to render an object. e.g. we may have multiple vertex
 // buffer objects related to rendering one object. The VAO allows us to setup the OpenGL state  to
 // render the object using the correct layout and correct buffers with one call after being setup.
-GLuint App::vertexArrayObject = 0; // NOLINT
+GLuint vertexArrayObject = 0; // NOLINT
 
 // Vertex Buffer Object -- VBO
 // It stores the information relating to vertices (e.g. position, normals, texture). VBOs are our
 // mechanism for arranging geometry on the GPU.
-GLuint App::vertexBufferObject = 0; // NOLINT
+GLuint vertexBufferObject = 0; // NOLINT
 
 // Shader program object
 // This object stores a unique id for the graphic pipeline program object that will be used for our
 // OpenGL draw calls
-GLuint App::graphicsPipelineShaderProgram = 0; // NOLINT
-
-namespace {
+GLuint graphicsPipelineShaderProgram = 0; // NOLINT
 
 /* At a minimum, every Modern OpenGL program needs a vertex and fragment shader
    OpenGL provides functions that will compile the shader source code (stored as strings) at
@@ -62,6 +72,10 @@ void main() {
 
 // If true we quit the main loop
 bool quit = false; // NOLINT
+
+} // namespace App
+
+namespace {
 
 void GetOpenGLVersionInfo()
 {
@@ -201,7 +215,7 @@ void Input()
         if (e.type == SDL_QUIT)
         {
             std::cout << "Goodbye!" << std::endl;
-            quit = true;
+            App::quit = true;
         }
     }
 }
@@ -219,8 +233,8 @@ void PreDraw()
     // Specify the view port
     glViewport(0, 0, App::screenWidth, App::screenHeight);
 
-    // Color of the background
-    glClearColor(0.0F, 0.0F, 1.F, 1.0F);
+    // Set the clear color (background color of the screen)
+    glClearColor(App::bg.r, App::bg.g, App::bg.b, App::bg.a);
 
     // Clear color buffer and depth buffer with the specified color above
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT); // NOLINT
@@ -301,7 +315,7 @@ void App::Initialize()
     }
 
     // Create an OpenGL graphics context (a big struct)
-    App::openGLContext = SDL_GL_CreateContext(graphicsApplicationWindow);
+    App::openGLContext = SDL_GL_CreateContext(App::graphicsApplicationWindow);
 
     if (App::openGLContext == nullptr)
     {
@@ -400,8 +414,8 @@ void App::VertexSpecification()
 /// @return void
 void App::CreateGraphicsPipeline()
 {
-    App::graphicsPipelineShaderProgram = CreateShaderProgram(vertexShaderSource,
-                                                             fragmentShaderSource);
+    App::graphicsPipelineShaderProgram = CreateShaderProgram(App::vertexShaderSource,
+                                                             App::fragmentShaderSource);
 }
 
 /// Main application (infinite) loop
@@ -429,7 +443,7 @@ void App::MainLoop()
 void App::CleanUp()
 {
     // Clean up SDL window
-    SDL_DestroyWindow(graphicsApplicationWindow);
+    SDL_DestroyWindow(App::graphicsApplicationWindow);
 
     // Clean up SDL video subsystem
     SDL_Quit();
