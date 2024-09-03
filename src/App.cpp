@@ -257,6 +257,10 @@ void Draw()
                  vertices, specifying 3 here will draw one triangle
     */
     glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    // Stop using our current graphics pipeline
+    // Note: this is not necessary if we only have on graphics pipe line.
+    glUseProgram(0);
 }
 
 } // namespace
