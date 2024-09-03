@@ -97,6 +97,11 @@ GLuint CompileShader(GLenum type, std::string const &source)
         std::array<char, MAX_GL_INFO_LOG_LEN> infoLog = {0};
         glGetShaderInfoLog(shaderObject, MAX_GL_INFO_LOG_LEN, nullptr, infoLog.data());
         std::cerr << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog.data() << std::endl;
+
+        // Delete broken shader object
+        glDeleteShader(shaderObject);
+
+        return 0;
     }
 
     return shaderObject;
