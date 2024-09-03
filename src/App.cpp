@@ -289,18 +289,21 @@ void App::Initialize()
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-    // Create window
-    graphicsApplicationWindow = SDL_CreateWindow("OpenGL Window", 0, 0, screenWidth, screenHeight,
-                                                 SDL_WINDOW_OPENGL);
-    if (graphicsApplicationWindow == nullptr)
+    // Create an application window using OpenGL that supports SDL
+    App::graphicsApplicationWindow = SDL_CreateWindow(
+        "OpenGL Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, // NOLINT
+        App::screenWidth, App::screenHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+
+    if (App::graphicsApplicationWindow == nullptr)
     {
         std::cerr << "SDL window could not be created: " << SDL_GetError() << std::endl;
         exit(2); // NOLINT
     }
 
-    // Create OpenGL context
-    openGLContext = SDL_GL_CreateContext(graphicsApplicationWindow);
-    if (openGLContext == nullptr)
+    // Create an OpenGL graphics context (a big struct)
+    App::openGLContext = SDL_GL_CreateContext(graphicsApplicationWindow);
+
+    if (App::openGLContext == nullptr)
     {
         std::cerr << "OpenGL Context could not be created: " << SDL_GetError() << std::endl;
         exit(3); // NOLINT
