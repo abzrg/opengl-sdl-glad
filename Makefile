@@ -5,8 +5,15 @@ INCDIR = include
 CC = clang
 CXX = clang++
 
-CFLAGS = -Wall -Wextra -std=c11 -pedantic -g -O0 -I$(INCDIR)
-CXXFLAGS = -Wall -Wextra -std=c++20 -pedantic -g -O0 -I$(INCDIR)
+ASANFLAGS = -fsanitize=address # buffer overflows, use-after-free, use-after-scope, and memory leaks
+ASANFLAGS += -fsanitize=undefined # integer overflows, invalid pointer arithmetic, ...
+# ASANFLAGS += -fsanitize=memory # uninitialized memory reads (only supported on Linux).
+# ASANFLAGS += -fsanitize=thread # Detects data races in multi-threaded programs
+ASANFLAGS += -fsanitize=leak # Specifically detects memory leaks (included in Address Sanitizer by
+                            # default
+CFLAGS = -Wall -Wextra -std=c11 -pedantic -g -O0 -I$(INCDIR) $(ASANFLAGS)
+CXXFLAGS = -Wall -Wextra -std=c++20 -pedantic -g -O0 -I$(INCDIR) $(ASANFLAGS)
+
 LDLIBS = -lSDL2 -ldl
 
 CXX_SOURCES = $(wildcard $(SRCDIR)/*.cpp)
