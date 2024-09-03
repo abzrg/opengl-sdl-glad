@@ -168,7 +168,6 @@ GLuint CreateShaderProgram(std::string const &vertexShaderSource,
                             infoLog.data());
         std::cerr << "ERROR::PROGRAM::VALIDATION_FAILED\n" << infoLog.data() << std::endl;
     }
-
 #endif
 
     // [extra] Unbind the VAO after validation
@@ -283,14 +282,11 @@ void App::Initialize()
     // Use OpenGL 4.1 core or greater (latest version available on Mac)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-
     // Disable deprecated functions
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
     // Enable double buffering for smoother update
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-    // ?
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     // Create window
@@ -355,8 +351,8 @@ void App::VertexSpecification()
     glBindBuffer(GL_ARRAY_BUFFER, App::vertexBufferObject);
 
     /*
-       Populate within the currently bound buffer the data from `vertexPositions` which is on the
-       CPU onto a buffer that will live on the GPU.
+        Populate within the currently bound buffer the data from `vertexPositions` which is on the
+        CPU onto a buffer that will live on the GPU.
 
         - target: type of the buffer (GL_ARRAY_BUFFER or GL_ELEMENT_ARRAY_BUFFER)
         - size: Size of the data in bytes.
