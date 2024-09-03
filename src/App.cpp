@@ -309,8 +309,8 @@ void App::Initialize()
         exit(3); // NOLINT
     }
 
-    // Initialize Glad library
-    if (gladLoadGLLoader(SDL_GL_GetProcAddress) == 0)
+    // Initialize GLAD library
+    if (gladLoadGLLoader(static_cast<GLADloadproc>(SDL_GL_GetProcAddress)) == 0)
     {
         std::cerr << "Could not initialize Glad." << std::endl;
         exit(4); // NOLINT
@@ -384,7 +384,8 @@ void App::VertexSpecification()
                  in the data store of the buffer currently bound to the GL_ARRAY_BUFFER target. The
                  initial value is 0.
     */
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void *) 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat),
+                          static_cast<void *>(nullptr));
 
     // Unbind currently bound VAO
     glBindVertexArray(0);
