@@ -90,9 +90,9 @@ GLuint CompileShader(GLenum type, std::string const &source)
     glCompileShader(shaderObject);
 
     // Check for compilation errors
-    GLint success = 0;
+    GLint success = GL_FALSE;
     glGetShaderiv(shaderObject, GL_COMPILE_STATUS, &success);
-    if (success == 0)
+    if (success == GL_FALSE)
     {
         std::array<char, MAX_GL_INFO_LOG_LEN> infoLog = {0};
         glGetShaderInfoLog(shaderObject, MAX_GL_INFO_LOG_LEN, nullptr, infoLog.data());
@@ -129,9 +129,9 @@ GLuint CreateShaderProgram(std::string const &vertexShaderSource,
 
 #ifdef DEBUG
     // Check the status of the link
-    GLint linkStatus = 0;
+    GLint linkStatus = GL_FALSE;
     glGetProgramiv(programObject, GL_LINK_STATUS, &linkStatus);
-    if (linkStatus == 0)
+    if (linkStatus == GL_FALSE)
     {
         std::array<char, MAX_GL_INFO_LOG_LEN> infoLog = {0};
         glGetProgramInfoLog(programObject, static_cast<GLsizei>(infoLog.size()), nullptr,
@@ -154,9 +154,9 @@ GLuint CreateShaderProgram(std::string const &vertexShaderSource,
     glValidateProgram(programObject);
 
 #ifdef DEBUG
-    GLint validateStatus = 0;
+    GLint validateStatus = GL_FALSE;
     glGetProgramiv(programObject, GL_VALIDATE_STATUS, &validateStatus);
-    if (validateStatus == 0)
+    if (validateStatus == GL_FALSE)
     {
         std::array<char, MAX_GL_INFO_LOG_LEN> infoLog = {0};
         glGetProgramInfoLog(programObject, static_cast<GLsizei>(infoLog.size()), nullptr,
