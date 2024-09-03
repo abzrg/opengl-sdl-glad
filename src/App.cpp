@@ -340,19 +340,26 @@ void App::Initialize()
 
 /// Setup geometry/model/mesh during vertex specification step
 ///
+/// The first stage in the rasterization pipeline is transforming vertices to clip space. Before
+/// OpenGL can do this however, it must receive a list of vertices. So the very first stage of the
+/// pipeline is sending triangle data to OpenGL.
+///
 /// @return void
 void App::VertexSpecification()
 {
     // Model/Geometry/Mesh data
-    // Specify the x,y,z position attributes withing vertexPositions for the data. This information
-    // is stored in the CPU, and we need to store the data on the GPU in a call to `glBufferData`,
-    // which will store this information into a vertex buffer object (VBO)
-    // At a minimum a vertex should have a position attribute
+    // Specify the x,y,z (and w) position attributes withing vertexPositions for the data. This
+    // information is stored in the CPU, and we need to store the data on the GPU in a call to
+    // `glBufferData`, which will store this information into a vertex buffer object (VBO) At a
+    // minimum a vertex should have a position attribute
+    //
+    // Since every 4 floats represents a vertex's position, we have 3 vertices: the minimum number
+    // for a triangle
     std::vector<GLfloat> const vertexPosition = {
-        // x      y      z
-        -0.8F, -0.8F, +0.0F, // vertex 0 (left)
-        +0.8F, -0.8F, +0.0F, // vertex 1 (right)
-        +0.0F, +0.8F, +0.0F  // vertex 2 (top)
+        // x      y      z      w
+        -0.8F, -0.8F, +0.0F, +1.0F, // vertex 0 (left)
+        +0.8F, -0.8F, +0.0F, +1.0F, // vertex 1 (right)
+        +0.0F, +0.8F, +0.0F, +1.0F  // vertex 2 (top)
     };
 
     //- Set things up on the GPU
@@ -404,7 +411,7 @@ void App::VertexSpecification()
                  in the data store of the buffer currently bound to the GL_ARRAY_BUFFER target. The
                  initial value is 0.
     */
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat),
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat),
                           static_cast<void *>(nullptr));
 
     // Unbind currently bound VAO
