@@ -273,7 +273,7 @@ void App::Initialize()
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
-        std::cerr << "SDL2 could not initialize video subsystem." << std::endl;
+        std::cerr << "SDL2 could not initialize video subsystem: " << SDL_GetError() << std::endl;
         exit(1); // NOLINT
     }
 
@@ -294,7 +294,7 @@ void App::Initialize()
                                                  SDL_WINDOW_OPENGL);
     if (graphicsApplicationWindow == nullptr)
     {
-        std::cerr << "SDL window was not able to be created." << std::endl;
+        std::cerr << "SDL window could not be created: " << SDL_GetError() << std::endl;
         exit(2); // NOLINT
     }
 
@@ -302,7 +302,7 @@ void App::Initialize()
     openGLContext = SDL_GL_CreateContext(graphicsApplicationWindow);
     if (openGLContext == nullptr)
     {
-        std::cerr << "OpenGL Context not available." << std::endl;
+        std::cerr << "OpenGL Context could not be created: " << SDL_GetError() << std::endl;
         exit(3); // NOLINT
     }
 
