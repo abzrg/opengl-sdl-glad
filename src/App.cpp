@@ -13,25 +13,47 @@ constexpr int App::screenWidth = 640;
 SDL_Window *App::graphicsApplicationWindow = nullptr; // NOLINT
 SDL_GLContext App::openGLContext = nullptr;           // NOLINT
 
-// VAO
+// Vertex Array Object -- VAO
+// It encapsulates all of the items needed to render an object. e.g. we may have multiple vertex
+// buffer objects related to rendering one object. The VAO allows us to setup the OpenGL state  to
+// render the object using the correct layout and correct buffers with one call after being setup.
 GLuint App::vertexArrayObject = 0; // NOLINT
-// VBO
+
+// Vertex Buffer Object -- VBO
+// It stores the information relating to vertices (e.g. position, normals, texture). VBOs are our
+// mechanism for arranging geometry on the GPU.
 GLuint App::vertexBufferObject = 0; // NOLINT
 
-// Program object (for shaders)
+// Shader program object
+// This object stores a unique id for the graphic pipeline program object that will be used for our
+// OpenGL draw calls
 GLuint App::graphicsPipelineShaderProgram = 0; // NOLINT
 
 namespace {
 
-std::string const vertexShaderSource = R"(
+/* At a minimum, every Modern OpenGL program needs a vertex and fragment shader
+   OpenGL provides functions that will compile the shader source code (stored as strings) at
+   run-time. */
+
+// Vertex Shader
+// It executes once per vertex, and will be in charge of the final position of the vertex
+/* Homogeneous coordinates:
+    A three-dimensional euclidean space point (x, y, z) becomes the homogeneous vertex with
+    coordinates (x, y, z, 1.0), and the two-dimensional euclidean point (x, y) becomes (x, y,
+    0.0, 1.0). As long as w is nonzero, the homogeneous vertex (x, y, z, w) corresponds to the
+    three-dimensional point (x/w, y/w, z/w). */
+std::string const vertexShaderSource = /*NOLINT*/ R"(
 #version 410 core
 in vec4 position;
 void main() {
-    gl_Position = position;
+    gl_Position = position; // (x, y, z, w) <-> (x/w, y/w, z/w)
 }
 )";
 
-std::string const fragmentShaderSource = R"(
+// Fragment Shader
+// It executes once per fragment (i.e. for every pixel that will be rasterized), and in part
+// determines the final color that will be sent to the screen.
+std::string const fragmentShaderSource = /*NOLINT*/ R"(
 #version 410 core
 out vec4 color;
 void main() {
@@ -50,7 +72,11 @@ void GetOpenGLVersionInfo()
     std::cout << "Shading Language: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 }
 
-// Compiles the shader and returns a handle
+/// Compiles any valid vertex, fragment, geometry, tessellation or compute shader.
+///
+/// @param type Determine which shader to compile
+/// @param source The shader source code
+/// @return id of the shader object (0 on failure)
 GLuint CompileShader(GLenum type, std::string const &source)
 {
     // Create shader object
@@ -77,15 +103,23 @@ GLuint CompileShader(GLenum type, std::string const &source)
     return shaderObject;
 }
 
-// Returns the handle to the GPU program
+/// Creates a graphics program object (i.e. graphics pipeline) with a vertex shader and a fragment
+/// shader
+///
+/// @param vertexShaderSource Vertex shader source code
+/// @param fragmentShaderSource Fragment shader source code
+/// @return id of the program object
 GLuint CreateShaderProgram(std::string const &vertexShaderSource,
                            std::string const &fragmentShaderSource)
 {
-    // Create an empty program and return a handle
+    // Create a new program object
     GLuint programObject = glCreateProgram();
 
+    // Compile shaders
     GLuint vertexShader = CompileShader(GL_VERTEX_SHADER /*enum*/, vertexShaderSource);
     GLuint fragmentShader = CompileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+
+    //- Link shader programs (.cpp + .cpp -> executable)
 
     // Associate (attach) the shaders to the program object
     glAttachShader(programObject, vertexShader);
@@ -107,6 +141,8 @@ GLuint CreateShaderProgram(std::string const &vertexShaderSource,
     }
 
 #endif
+
+    //- Validation
 
     // OpenGL requires a VAO to be bound when you validate or use a shader program that interacts
     // with vertex attributes.
@@ -135,7 +171,8 @@ GLuint CreateShaderProgram(std::string const &vertexShaderSource,
     // [why?] b/c otherwise we get the following error:  No vertex array object bound
     glBindVertexArray(0);
 
-    // Clean up shader objects after linking
+    // Once our final program object has been created, we can detach and delete the individual
+    // shaders
     glDetachShader(programObject, vertexShader);
     glDetachShader(programObject, fragmentShader);
     glDeleteShader(vertexShader);
@@ -146,13 +183,18 @@ GLuint CreateShaderProgram(std::string const &vertexShaderSource,
 
 /* Main Loop */
 
-// Handle inputs (via SDL)
+/// Handle user inputs (via SDL)
+///
+/// @return void
 void Input()
 {
+    // Event handler object that handles events that are related to input/output events
     SDL_Event e;
 
+    // Handle events on queue
     while (SDL_PollEvent(&e) != 0)
     {
+        // If user posts an event to quit (red x button on the corner of the window)
         if (e.type == SDL_QUIT)
         {
             std::cout << "Goodbye!" << std::endl;
@@ -161,51 +203,83 @@ void Input()
     }
 }
 
-// Setting OpenGL state for darwing
+/// Setting some sort of OpenGL state prior to darwing
+/// Note: some of the calls may take place at different stages (post-processing) of the pipeline
+///
+/// @return void
 void PreDraw()
 {
-    // ?
+    // Disable depth test and face culling
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
-    // Set the view port ?
+    // Specify the view port
     glViewport(0, 0, App::screenWidth, App::screenHeight);
 
     // Color of the background
     glClearColor(0.0F, 0.0F, 1.F, 1.0F);
+
+    // Clear color buffer and depth buffer with the specified color above
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT); // NOLINT
 
-    // ?
+    // Use the compiled (and linked) program that have two shaders in it
     glUseProgram(App::graphicsPipelineShaderProgram);
 }
 
-// Choosing which vertex array object we are going to draw
+/// The render function that gets called once per loop
+/// Typically this includes `glDraw` related calls, and the relevant setup of buffers for those
+/// calls.
+///
+/// @return void
 void Draw()
 {
+    // Enable attributes (position in this case)
     glBindVertexArray(App::vertexArrayObject);
+
+    // Select the desired VBO
     glBindBuffer(GL_ARRAY_BUFFER, App::vertexBufferObject);
 
+    /*
+        Render data (Start at the vertex at index 0 in the currently bound vertex array. Use the
+                     next 3 vertices to draw a single triangle.)
+
+        - `GL_TRIANGLES` specifies the mode in which vertices will be interpreted. It means that
+           every set of three vertices will be treated as an independent triangle
+
+        - start: This is the starting index in the array of vertices. It tells OpenGL to begin
+                 drawing from the first vertex in the array (i.e., the vertex at index 0).
+
+        - count: This is the number of vertices to be drawn. Since a single triangle consists of 3
+                 vertices, specifying 3 here will draw one triangle
+    */
     glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 } // namespace
 
+/// Initialize the graphics application. It sets up a window and OpenGL context (with appropriate
+/// version)
+///
+/// @return void
 void App::Initialize()
 {
+    // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
         std::cerr << "SDL2 could not initialize video subsystem." << std::endl;
         exit(1); // NOLINT
     }
 
-    // Use OpenGL 4.1 (latest version available on Mac)
+    //- Setup OpenGL context
+
+    // Use OpenGL 4.1 core or greater (latest version available on Mac)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
     // Disable deprecated functions
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    // Enable double buffering for smoother transitioning
+    // Enable double buffering for smoother update
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
     // ?
@@ -239,74 +313,107 @@ void App::Initialize()
     GetOpenGLVersionInfo();
 }
 
-// Creates vertices on the GPU
+/// Setup geometry/model/mesh during vertex specification step
+///
+/// @return void
 void App::VertexSpecification()
 {
-    // Specify the x,y,z component of the vertex position (lives on CPU)
+    // Model/Geometry/Mesh data
+    // Specify the x,y,z position attributes withing vertexPositions for the data. This information
+    // is stored in the CPU, and we need to store the data on the GPU in a call to `glBufferData`,
+    // which will store this information into a vertex buffer object (VBO)
+    // At a minimum a vertex should have a position attribute
     std::vector<GLfloat> const vertexPosition = {
-        // x     y     z
-        -0.8F, -0.8F, +0.0F, // vertex 0
-        +0.8F, -0.8F, +0.0F, // vertex 1
-        +0.0F, +0.8F, +0.0F  // vertex 2
+        // x      y      z
+        -0.8F, -0.8F, +0.0F, // vertex 0 (left)
+        +0.8F, -0.8F, +0.0F, // vertex 1 (right)
+        +0.0F, +0.8F, +0.0F  // vertex 2 (top)
     };
 
     //- Set things up on the GPU
 
-    // Generate 1 vertex array object (VAO)
+    // Vertex Array Object (VAO) setup
+    // It can be thought of as a wrapper around all of the vertex buffer objects in the sense that
+    // it encapsulates all VBO states that we are setting up. Thus, it is also important that we
+    // bind (select) VAO (via `glBindVertexArray`) before VBO operations Generate 1 vertex array
+    // object.
     glGenVertexArrays(1, &App::vertexArrayObject);
     // Bind to the desired VAO -> GL_ARRAY_BUFFER
     glBindVertexArray(App::vertexArrayObject);
 
-    // Generate 1 vertex buffer object (VBO)
+    // Vertex Buffer Object (VBO) setup
+    // Generate 1 new VBO and bind to it
     glGenBuffers(1, &App::vertexBufferObject);
-    // Bind to the desired VBO for the target of vertex attributes (position, color, ...)
     glBindBuffer(GL_ARRAY_BUFFER, App::vertexBufferObject);
-    // Populate the VBO with our data
-    glBufferData(GL_ARRAY_BUFFER,                         // Target
-                 vertexPosition.size() * sizeof(GLfloat), // NOLINT (size in bytes of all data)
-                 vertexPosition.data(),                   // Returns ptr to the underlying array
-                 GL_STATIC_DRAW // Usage (for static drawing: not much change)
-    );
 
-    // ٍEnable our only vertex attribute (position (x, y, z)), which is the first one -> 0
-    // Enable the vertex attribute of the currently bound array buffer
-    glEnableVertexAttribArray(0);
     /*
-       Actually use the data that is bound the target of GL_ARRAY_BUFFER
+       Populate within the currently bound buffer the data from `vertexPositions` which is on the
+       CPU onto a buffer that will live on the GPU.
 
-       - index:  index-th attribute
-       - size:   how many items are in this vertex attribute (3 numbers: x, y, z)
-       - type:   type of the data in this vertex attribute
-       - normalize: whether these numbers are normalized (between 0 and 1) or not
-       - stride: byte offset between consecutive generic vertex attributes (in this case 3*GLfloat)
-       - offset: offset of the first component of the first generic vertex attributes in the array
+        - target: type of the buffer (GL_ARRAY_BUFFER or GL_ELEMENT_ARRAY_BUFFER)
+        - size: Size of the data in bytes.
+        - data: Raw array of data
+        - usage: how we intend to use the data
+    */
+    glBufferData(GL_ARRAY_BUFFER, vertexPosition.size() * sizeof(GLfloat), // NOLINT
+                 vertexPosition.data(), GL_STATIC_DRAW);
+
+    //- Tell OpenGL how the information in VBO must be used.
+
+    // ٍEnable our only (and first -> [0]) vertex attribute, which is position (x, y, z)
+    // It enables the first vertex attribute of the currently bound array buffer
+    glEnableVertexAttribArray(0);
+
+    /*
+        Tell OpenGL how we are going to move through the data.
+
+        - index: Attribute 0 correspond to the enabled glEnableVertexAttribArray.
+                 This also correspond to (layout=0) in shader which selects these attributes.
+        - size: Number of components in this attribute (3: x, y, z)
+        - type: Type of components
+        - normalize: whether these numbers are normalized (between 0 and 1)
+        - stride: byte offset between consecutive generic vertex attributes (in this case 3*GLfloat)
+        - offset: offset of the first component of the first generic vertex attributes in the array
                  in the data store of the buffer currently bound to the GL_ARRAY_BUFFER target. The
                  initial value is 0.
     */
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void *) 0);
 
-    // Unbind VAO
+    // Unbind currently bound VAO
     glBindVertexArray(0);
-    // Disable vertex attribute of the currently bound array buffer
+
+    // Disable any attribute we opened in our VAO as we do not want to leave them open.
     glDisableVertexAttribArray(0);
 }
 
-// Once the geometry is ready, create pipeline (setting up vertex and fragment shaders)
+/// Once the geometry is ready, create the graphics pipeline (setting up vertex and fragment
+/// shaders)
+///
+/// @return void
 void App::CreateGraphicsPipeline()
 {
     App::graphicsPipelineShaderProgram = CreateShaderProgram(vertexShaderSource,
                                                              fragmentShaderSource);
 }
 
+/// Main application (infinite) loop
+///
+/// @return void
 void App::MainLoop()
 {
     while (!quit)
     {
+        // Handle inputs
         Input();
+
+        // Setup anything prior to rendering (e.g. setting up OpenGL state)
         PreDraw();
+
+        // Draw (rendering) calls in OpenGL
         Draw();
 
-        // Update the screen (front buffer) when drawing is done in the back buffer
+        // Update the screen on the specified window.
+        // Swap Front buffer with Back buffer when drawing is done in the back buffer
         SDL_GL_SwapWindow(App::graphicsApplicationWindow);
     }
 }
