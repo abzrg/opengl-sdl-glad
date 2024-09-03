@@ -4,6 +4,7 @@
 #include "glad/glad.h"
 
 #define DEBUG
+#define MAX_GL_INFO_LOG_LEN 512
 
 namespace App {
 
