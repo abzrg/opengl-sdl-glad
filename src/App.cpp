@@ -240,6 +240,7 @@ void PreDraw()
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT); // NOLINT
 
     // Use the compiled (and linked) program that have two shaders in it
+    // This sets the current shader program to be used by all the subsequent rendering commands.
     glUseProgram(App::graphicsPipelineShaderProgram);
 }
 
@@ -268,6 +269,9 @@ void Draw()
 
         - count: This is the number of vertices to be drawn. Since a single triangle consists of 3
                  vertices, specifying 3 here will draw one triangle
+
+        This is a rendering function. It uses the current state to generate a stream of vertices
+        that will form triangles.
     */
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -352,6 +356,8 @@ void App::VertexSpecification()
     };
 
     //- Set things up on the GPU
+    // These command set up the coordinates of the triangle to be rendered. They tell OpenGL the
+    // location in memory that the positions of the triangle will come from.
 
     // Vertex Array Object (VAO) setup
     // It can be thought of as a wrapper around all of the vertex buffer objects in the sense that
@@ -435,7 +441,11 @@ void App::MainLoop()
         Draw();
 
         // Update the screen on the specified window.
-        // Swap Front buffer with Back buffer when drawing is done in the back buffer
+        // The OpenGL framebuffer is double-buffered: SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        // The image that are currently being shown to the user is not the same image we are
+        // rendering to. Thus, all of our rendering is hidden from view until it is shown to the
+        // user. This way, the user never sees a half-rendered image. This is the function that
+        // causes the image we are rendering to be displayed to the user.
         SDL_GL_SwapWindow(App::graphicsApplicationWindow);
     }
 }
