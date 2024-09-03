@@ -363,6 +363,7 @@ void App::VertexSpecification()
     };
 
     //- Set things up on the GPU
+
     // These command set up the coordinates of the triangle to be rendered. They tell OpenGL the
     // location in memory that the positions of the triangle will come from.
 
@@ -388,11 +389,22 @@ void App::VertexSpecification()
         - size: Size of the data in bytes.
         - data: Raw array of data
         - usage: how we intend to use the data
+
+        It performs two operations:
+        1. It allocates memory for the buffer currently bound to GL_ARRAY_BUFFER
+        2. Copying data from our memory array into the buffer object
+        After this function call, the buffer object stores exactly what vertexPositions stores.
     */
     glBufferData(GL_ARRAY_BUFFER, vertexPosition.size() * sizeof(GLfloat), // NOLINT
                  vertexPosition.data(), GL_STATIC_DRAW);
 
-    //- Tell OpenGL how the information in VBO must be used.
+    // Unbind currently bound VBO:
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //- So far we managed to put the vertex data in GPU's memory. However VBO is not formatted.
+    // Now we need to tell OpenGL what form the vertex data in VBO takes.
+
+    glBindBuffer(GL_ARRAY_BUFFER, App::vertexBufferObject);
 
     // ٍEnable our only (and first -> [0]) vertex attribute, which is position (x, y, z)
     // It enables the first vertex attribute of the currently bound array buffer
@@ -403,16 +415,20 @@ void App::VertexSpecification()
 
         - index: Attribute 0 correspond to the enabled glEnableVertexAttribArray.
                  This also correspond to (layout=0) in shader which selects these attributes.
-        - size: Number of components in this attribute (3: x, y, z)
-        - type: Type of components
+        - size: Number of components representing one vertex (3: x, y, z)
+        - type: Base type of one component of the vertex
         - normalize: whether these numbers are normalized (between 0 and 1)
-        - stride: byte offset between consecutive generic vertex attributes (in this case 3*GLfloat)
+        - stride: The spacing between each set of values. n our case, there is no space between
+                  values, so this value is 0
         - offset: offset of the first component of the first generic vertex attributes in the array
                  in the data store of the buffer currently bound to the GL_ARRAY_BUFFER target. The
                  initial value is 0.
     */
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat),
-                          static_cast<void *>(nullptr));
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, static_cast<void *>(nullptr));
+
+    //- Now that OpenGL knows where to find the data and how to interpret it
+
+    //- Clean Up
 
     // Unbind currently bound VAO
     glBindVertexArray(0);
