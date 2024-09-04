@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <vector>
 
@@ -137,11 +138,16 @@ GLuint CreateShaderProgram(std::string const &vertexShaderSource,
     GLuint vertexShader = CompileShader(GL_VERTEX_SHADER /*enum*/, vertexShaderSource);
     GLuint fragmentShader = CompileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
+    std::array<GLuint, 2> shaderList = {
+        vertexShader,
+        fragmentShader,
+    };
+
     //- Link shader programs (.cpp + .cpp -> executable)
 
     // Associate (attach) the shaders to the program object
-    glAttachShader(programObject, vertexShader);
-    glAttachShader(programObject, fragmentShader);
+    std::for_each(shaderList.begin(), shaderList.end(),
+                  [&](GLuint shader) { glAttachShader(programObject, shader); });
 
     // Link a program object
     glLinkProgram(programObject);
@@ -190,10 +196,9 @@ GLuint CreateShaderProgram(std::string const &vertexShaderSource,
 
     // Once our final program object has been created, we can detach and delete the individual
     // shaders
-    glDetachShader(programObject, vertexShader);
-    glDetachShader(programObject, fragmentShader);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    std::for_each(shaderList.begin(), shaderList.end(),
+                  [&](GLuint shader) { glDetachShader(programObject, shader); });
+    std::for_each(shaderList.begin(), shaderList.end(), glDeleteShader);
 
     return programObject;
 }
