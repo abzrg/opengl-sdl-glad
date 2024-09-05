@@ -8,3 +8,4 @@ OpenGL 4.1
 - [Introduction to OpenGL -- Mike Shah](https://www.youtube.com/playlist?list=PLvv0ScY6vfd9zlZkIIqGDeG5TUWswkMox)
 - [Learning Modern 3D Graphics Programming -- Jason L. McKesson (2012)](https://nicolbolas.github.io/oldtut/)
 - [docs.gl](https://docs.gl/)
+- [C++ OpenGL Function Call Wrapping](https://indiegamedev.net/2020/01/17/c-opengl-function-call-wrapping/)
