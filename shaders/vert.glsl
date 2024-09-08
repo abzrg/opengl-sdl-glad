@@ -10,8 +10,15 @@
 
 #version 410 core
 
-in vec4 position;
+layout(location=0) in vec3 vertexPosition;
+layout(location=1) in vec3 vertexColor;
+
+out vec3 v_vertexColor; // (convection) v_: coming from vertex shader
 
 void main() {
-    gl_Position = position; // (x, y, z, w) <-> (x/w, y/w, z/w)
+    // (x, y, z, w)
+    gl_Position = vec4(vertexPosition, 1.0f);
+
+    // Sent the color down to the pipeline
+    v_vertexColor = vertexColor;
 }

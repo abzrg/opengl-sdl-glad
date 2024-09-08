@@ -36,7 +36,8 @@ GLuint vertexArrayObject = 0; // NOLINT
 // Vertex Buffer Object -- VBO
 // It stores the information relating to vertices (e.g. position, normals, texture). VBOs are our
 // mechanism for arranging geometry on the GPU.
-GLuint vertexBufferObject = 0; // NOLINT
+GLuint vertexBufferObjectPosition = 0; // Buffer storing vertex position -- NOLINT
+GLuint vertexBufferObjectColor = 0;    // Buffer storing vertex color -- NOLINT
 
 // Shader program object
 // This object stores a unique id for the graphic pipeline program object that will be used for our
@@ -353,11 +354,21 @@ void App::VertexSpecification()
     //
     // Since every 4 floats represents a vertex's position, we have 3 vertices: the minimum number
     // for a triangle
+
+    // Vertex Position is a value between -1.0 and 1.0 (clip space)
     std::vector<GLfloat> const vertexPosition = {
-        // x      y      z      w
-        -0.8F, -0.8F, +0.0F, +1.0F, // vertex 0 (left)
-        +0.8F, -0.8F, +0.0F, +1.0F, // vertex 1 (right)
-        +0.0F, +0.8F, +0.0F, +1.0F  // vertex 2 (top)
+        // x      y      z
+        -0.8F, -0.8F, +0.0F, // vertex 0 (left)
+        +0.8F, -0.8F, +0.0F, // vertex 1 (right)
+        +0.0F, +0.8F, +0.0F  // vertex 2 (top)
+    };
+
+    // Vertex color is a value between 0.0 and 1.0
+    std::vector<GLfloat> const vertexColor = {
+        // r     g     b
+        1.0F, 0.0F, 0.0F, // vertex 0 (left)
+        0.0F, 1.0F, 0.0F, // vertex 1 (right)
+        0.0F, 0.0F, 1.0F, // vertex 2 (top)
     };
 
     //- Set things up on the GPU
@@ -374,10 +385,11 @@ void App::VertexSpecification()
     // Bind to the desired VAO -> GL_ARRAY_BUFFER
     glBindVertexArray(App::vertexArrayObject);
 
+    // [ VERTEX POSITION ]
     // Vertex Buffer Object (VBO) setup
-    // Generate 1 new VBO and bind to it
-    glGenBuffers(1, &App::vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, App::vertexBufferObject);
+    // Generate 1 new VBO and bind to it to store vertex positions
+    glGenBuffers(1, &App::vertexBufferObjectPosition);
+    glBindBuffer(GL_ARRAY_BUFFER, App::vertexBufferObjectPosition);
 
     /*
         Populate within the currently bound buffer the data from `vertexPositions` which is on the
@@ -396,16 +408,11 @@ void App::VertexSpecification()
     glBufferData(GL_ARRAY_BUFFER, vertexPosition.size() * sizeof(GLfloat), // NOLINT
                  vertexPosition.data(), GL_STATIC_DRAW);
 
-    // Unbind currently bound VBO:
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
     //- So far we managed to put the vertex data in GPU's memory. However VBO is not formatted.
     // Now we need to tell OpenGL what form the vertex data in VBO takes.
 
-    glBindBuffer(GL_ARRAY_BUFFER, App::vertexBufferObject);
-
-    // ٍEnable our only (and first -> [0]) vertex attribute, which is position (x, y, z)
-    // It enables the first vertex attribute of the currently bound array buffer
+    // ٍEnable the first (hence 0) vertex attribute, which is position (x, y, z).
+    // It enables the first vertex attribute of the currently bound array buffer.
     glEnableVertexAttribArray(0);
 
     /*
@@ -422,7 +429,21 @@ void App::VertexSpecification()
                  in the data store of the buffer currently bound to the GL_ARRAY_BUFFER target. The
                  initial value is 0.
     */
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, static_cast<void *>(nullptr));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    //- After specifying where's the vertex position buffer and how to read it, we can do the same
+    // for vertex color buffer
+
+    // [ VERTEX COLOR ]
+    // Generate 1 buffer for storing colors in the GPU and bind to it
+    glGenBuffers(1, &App::vertexBufferObjectColor);
+    glBindBuffer(GL_ARRAY_BUFFER, App::vertexBufferObjectColor);
+    glBufferData(GL_ARRAY_BUFFER, vertexColor.size() * sizeof(GLfloat), // NOLINT
+                 vertexColor.data(), GL_STATIC_DRAW);
+    // Enable the second (index 1) vertex attribute
+    glEnableVertexAttribArray(1);
+    // Specify how to read the vertex color buffer
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     //- Now that OpenGL knows where to find the data and how to interpret it
 
@@ -433,6 +454,7 @@ void App::VertexSpecification()
 
     // Disable any attribute we opened in our VAO as we do not want to leave them open.
     glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
 }
 
 /// Once the geometry is ready, create the graphics pipeline (setting up vertex and fragment

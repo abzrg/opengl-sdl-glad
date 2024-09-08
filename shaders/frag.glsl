@@ -5,8 +5,11 @@
 
 #version 410 core
 
+// Take the vertex color as input sent by the vertex Shader
+in vec3 v_vertexColor;
+
 out vec4 color;
 
 void main() {
-    color = vec4(1.1, 1.0, 0.0, 1.0);
+    color = vec4(v_vertexColor.r, v_vertexColor.g, v_vertexColor.b, 1.0f);
 }
