@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <fstream>
 #include <iostream>
+#include <string>
 #include <vector>
 
 #include "SDL2/SDL.h"
@@ -45,32 +47,6 @@ GLuint graphicsPipelineShaderProgram = 0; // NOLINT
    OpenGL provides functions that will compile the shader source code (stored as strings) at
    run-time. */
 
-// Vertex Shader
-// It executes once per vertex, and will be in charge of the final position of the vertex
-/* Homogeneous coordinates:
-    A three-dimensional euclidean space point (x, y, z) becomes the homogeneous vertex with
-    coordinates (x, y, z, 1.0), and the two-dimensional euclidean point (x, y) becomes (x, y,
-    0.0, 1.0). As long as w is nonzero, the homogeneous vertex (x, y, z, w) corresponds to the
-    three-dimensional point (x/w, y/w, z/w). */
-std::string const vertexShaderSource = /*NOLINT*/ R"(
-#version 410 core
-in vec4 position;
-void main() {
-    gl_Position = position; // (x, y, z, w) <-> (x/w, y/w, z/w)
-}
-)";
-
-// Fragment Shader
-// It executes once per fragment (i.e. for every pixel that will be rasterized), and in part
-// determines the final color that will be sent to the screen.
-std::string const fragmentShaderSource = /*NOLINT*/ R"(
-#version 410 core
-out vec4 color;
-void main() {
-    color = vec4(1.1, 1.0, 0.0, 1.0);
-}
-)";
-
 // If true we quit the main loop
 bool quit = false; // NOLINT
 
@@ -84,6 +60,26 @@ void GetOpenGLVersionInfo()
     std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
     std::cout << "Version: " << glGetString(GL_VERSION) << std::endl;
     std::cout << "Shading Language: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+}
+
+std::string LoadShaderAsString(std::string const &filepath)
+{
+    // Holds the returning shader program string
+    std::string src{};
+
+    std::string line;
+    std::ifstream file(filepath);
+    if (file.is_open())
+    {
+        while (std::getline(file, line))
+        {
+            src += line + '\n';
+        }
+
+        file.close();
+    }
+
+    return src;
 }
 
 /// Compiles any valid vertex, fragment, geometry, tessellation or compute shader.
@@ -448,8 +444,11 @@ void App::VertexSpecification()
 /// @return void
 void App::CreateGraphicsPipeline()
 {
-    App::graphicsPipelineShaderProgram = CreateShaderProgram(App::vertexShaderSource,
-                                                             App::fragmentShaderSource);
+    std::string vertexShaderSource = LoadShaderAsString("./shaders/vert.glsl");
+    std::string fragmentShaderSource = LoadShaderAsString("./shaders/frag.glsl");
+
+    App::graphicsPipelineShaderProgram = CreateShaderProgram(vertexShaderSource,
+                                                             fragmentShaderSource);
 }
 
 /// Main application (infinite) loop
