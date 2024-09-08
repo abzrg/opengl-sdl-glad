@@ -271,7 +271,7 @@ void Draw()
         This is a rendering function. It uses the current state to generate a stream of vertices
         that will form triangles.
     */
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // Stop using our current graphics pipeline
     // Note: this is not necessary if we only have on graphics pipe line.
@@ -355,14 +355,26 @@ void App::VertexSpecification()
     // - position is a value between -1.0 and 1.0 (clip space)
     // - color is a value between 0.0 and 1.0
     std::vector<GLfloat> const vertexData = {
-        -0.8F, -0.8F, +0.0F, // vertex 0 - position (left) <x, y, z>
-        +1.0F, +0.0F, +0.0F, // vertex 0 - color (left)    <r, g, b>
+        // First triangle
+        -0.5F, -0.5F, +0.0F, // vertex 0 - position (bottom left) <x, y, z>
+        +1.0F, +0.0F, +0.0F, // vertex 0 - color                  <r, g, b>
 
-        +0.8F, -0.8F, +0.0F, // vertex 1 - position (right)
-        +0.0F, +1.0F, +0.0F, // vertex 1 - color (right)
+        +0.5F, -0.5F, +0.0F, // vertex 1 - position (bottom right)
+        +0.0F, +1.0F, +0.0F, // vertex 1 - color
 
-        +0.0F, +0.8F, +0.0F, // vertex 2 - color (top)
-        +0.0F, +0.0F, +1.0F, // vertex 2 - position (top)
+        -0.5F, +0.5F, +0.0F, // vertex 2 - position (top left)
+        +1.0F, +1.0F, +0.0F, // vertex 2 - color
+
+
+        // Second triangle
+        +0.5F, +0.5F, +0.0F, // vertex 0 - position (top right)
+        +0.0F, +0.0F, +1.0F, // vertex 0 - color
+
+        -0.5F, +0.5F, +0.0F, // vertex 2 - position (top left)
+        +1.0F, +1.0F, +0.0F, // vertex 2 - color
+
+        +0.5F, -0.5F, +0.0F, // vertex 1 - position (bottom right)
+        +0.0F, +1.0F, +0.0F, // vertex 1 - color
     };
 
     //- Set things up on the GPU
