@@ -15,8 +15,7 @@ extern SDL_Window *graphicsApplicationWindow; // NOLINT
 extern SDL_GLContext openGLContext;           // NOLINT
 
 extern GLuint vertexArrayObject;  // NOLINT
-extern GLuint vertexBufferObjectPosition; // NOLINT
-extern GLuint vertexBufferObjectColor; // NOLINT
+extern GLuint vertexBufferObject; // NOLINT
 
 extern GLuint graphicsPipelineShaderProgram; // NOLINT
 
