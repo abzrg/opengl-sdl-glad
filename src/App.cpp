@@ -255,9 +255,6 @@ void Draw()
     // Enable attributes (position in this case)
     glBindVertexArray(App::vertexArrayObject);
 
-    // Select the desired VBO
-    glBindBuffer(GL_ARRAY_BUFFER, App::vertexBufferObject);
-
     /*
         Render data (Start at the vertex at index 0 in the currently bound vertex array. Use the
                      next 3 vertices to draw a single triangle.)
