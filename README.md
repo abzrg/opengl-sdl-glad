@@ -1,6 +1,6 @@
 # OpenGL + Glad + SDL2
 
-OpenGL 4.1
+OpenGL 4.1:
 [glad.zip](https://glad.dav1d.de/#language=c&specification=gl&api=gl%3D4.1&api=gles1%3Dnone&api=gles2%3Dnone&api=glsc2%3Dnone&profile=compatibility&loader=on)
 
 ## Learning Resources
@@ -26,3 +26,24 @@ A quadrilateral is consisting of two triangles.
 In vertex specification we need two sets of three coordinate points.
 Two vertices have the same coordinate but have to be specified separately.
 We also need to specify that we are drawing 6 vertices in the call to `glDrawArrays`.
+
+## Error handling
+
+```cpp
+// https://community.arm.com/arm-community-blogs/b/graphics-gaming-and-vr-blog/posts/easier-opengl-es-debugging-on-arm-mali-gpus-with-gl_5f00_khr_5f00_debug
+
+// #ifdef _DEBUG
+// #define CHECK_GL_ERROR() checkGLErrorAndPrint()
+// #else
+// #define CHECK_GL_ERROR()
+// #endif
+//
+// void checkGLErrorAndPrint(void)
+// {
+//     GLenum error = glGetError();
+//     if (error != GL_NO_ERROR)
+//     {
+//         std::cout << ("GL error detected: 0x%04x\n", error);
+//     }
+// }
+```
