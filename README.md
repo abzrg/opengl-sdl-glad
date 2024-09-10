@@ -29,6 +29,9 @@ We also need to specify that we are drawing 6 vertices in the call to `glDrawArr
 
 ## Error handling
 
+- [Common Mistakes in OpenGL](https://khronos.org/opengl/wiki/Common_Mistakes)
+- [glGetError]()
+
 ```cpp
 // https://community.arm.com/arm-community-blogs/b/graphics-gaming-and-vr-blog/posts/easier-opengl-es-debugging-on-arm-mali-gpus-with-gl_5f00_khr_5f00_debug
 

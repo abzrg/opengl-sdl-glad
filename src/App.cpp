@@ -65,6 +65,53 @@ void GetOpenGLVersionInfo()
     std::cout << "Shading Language: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 }
 
+/// Clear the error state until no error exists.
+/// This is because in OpenGL and a call to glGetError no other error is recorded until.
+/// 1. glGetError is called,
+/// 2. the error code is returned,
+/// 3. the flag is set to GL_NO_ERROR.
+///
+/// @return void
+void GLClearAllErrors()
+{
+    // GL_NO_ERROR: no error has been recorded
+    while (glGetError() != GL_NO_ERROR)
+    {
+
+    }
+}
+
+/// Check if an error has occured and return the error code and show where it happend.
+/// This function is usually called after a call to some OpenGL function (starting with gl).
+///
+/// @param funcName name of the function in which the error has happened
+/// @param lineNo line number at which the error has happend
+/// @return bool whether any error has occurred or not
+bool GLCheckErrorStatus(const char* funcName, int lineNo)
+{
+    while (GLenum error = glGetError()) {
+        std::cerr << "OpenGL Error: " << error
+                  << "\n\tLine: " << lineNo
+                  << "\n\tFunction: " << funcName
+                  << '\n' << std::endl;
+        return true;
+    }
+
+    // error was 0 (GL_NO_ERROR)
+    return false;
+}
+
+/// Wraps call to OpenGL functions. First clears any previously set error state,
+/// then it executes the function call, and finally checks for the errors,
+/// passing the string of the function call (#X) and the line number (__LINE__)
+/// at which the error has happened.
+///
+/// @param X function call including function name all its parameters
+#define GLCall(X)                               \
+    GLClearAllErrors();                         \
+    X;                                          \
+    GLCheckErrorStatus(#X, __LINE__);
+
 std::string LoadShaderAsString(std::string const &filepath)
 {
     // Holds the returning shader program string
@@ -259,7 +306,7 @@ void Draw()
     glBindVertexArray(App::vertexArrayObject);
 
     // Draw vertices specified in the index buffer
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);); // Checking OpenGL errors
 
     // Stop using our current graphics pipeline
     // Note: this is not necessary if we only have on graphics pipe line.
