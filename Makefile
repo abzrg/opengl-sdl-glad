@@ -13,8 +13,9 @@ ASANFLAGS += -fsanitize=leak # Specifically detects memory leaks (included in Ad
                             # default
 CFLAGS = -Wall -Wextra -std=c11 -pedantic -g -O0 -I$(INCDIR) $(ASANFLAGS)
 CXXFLAGS = -Wall -Wextra -std=c++20 -pedantic -g -O0 -I$(INCDIR) $(ASANFLAGS)
+CXXFLAGS += `pkg-config --cflags sdl2`
 
-LDLIBS = -lSDL2 -ldl
+LDLIBS = `pkg-config --libs sdl2` -ldl
 
 CXX_SOURCES = $(wildcard $(SRCDIR)/*.cpp)
 C_SOURCES = $(wildcard $(SRCDIR)/*.c)
