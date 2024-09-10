@@ -38,6 +38,9 @@ GLuint vertexArrayObject = 0; // NOLINT
 // mechanism for arranging geometry on the GPU.
 GLuint vertexBufferObject = 0; // Containing position and color -- NOLINT
 
+// Index/Element Buffer Object (IBO i.e. EBO)
+GLuint indexBufferObject = 0; // NOLINT
+
 // Shader program object
 // This object stores a unique id for the graphic pipeline program object that will be used for our
 // OpenGL draw calls
@@ -255,23 +258,8 @@ void Draw()
     // Enable attributes (position in this case)
     glBindVertexArray(App::vertexArrayObject);
 
-    /*
-        Render data (Start at the vertex at index 0 in the currently bound vertex array. Use the
-                     next 3 vertices to draw a single triangle.)
-
-        - `GL_TRIANGLES` specifies the mode in which vertices will be interpreted. It means that
-           every set of three vertices will be treated as an independent triangle
-
-        - start: This is the starting index in the array of vertices. It tells OpenGL to begin
-                 drawing from the first vertex in the array (i.e., the vertex at index 0).
-
-        - count: This is the number of vertices to be drawn. Since a single triangle consists of 3
-                 vertices, specifying 3 here will draw one triangle
-
-        This is a rendering function. It uses the current state to generate a stream of vertices
-        that will form triangles.
-    */
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    // Draw vertices specified in the index buffer
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
     // Stop using our current graphics pipeline
     // Note: this is not necessary if we only have on graphics pipe line.
@@ -355,7 +343,6 @@ void App::VertexSpecification()
     // - position is a value between -1.0 and 1.0 (clip space)
     // - color is a value between 0.0 and 1.0
     std::vector<GLfloat> const vertexData = {
-        // First triangle
         -0.5F, -0.5F, +0.0F, // vertex 0 - position (bottom left) <x, y, z>
         +1.0F, +0.0F, +0.0F, // vertex 0 - color                  <r, g, b>
 
@@ -365,16 +352,8 @@ void App::VertexSpecification()
         -0.5F, +0.5F, +0.0F, // vertex 2 - position (top left)
         +1.0F, +1.0F, +0.0F, // vertex 2 - color
 
-
-        // Second triangle
-        +0.5F, +0.5F, +0.0F, // vertex 0 - position (top right)
-        +0.0F, +0.0F, +1.0F, // vertex 0 - color
-
-        -0.5F, +0.5F, +0.0F, // vertex 2 - position (top left)
-        +1.0F, +1.0F, +0.0F, // vertex 2 - color
-
-        +0.5F, -0.5F, +0.0F, // vertex 1 - position (bottom right)
-        +0.0F, +1.0F, +0.0F, // vertex 1 - color
+        +0.5F, +0.5F, +0.0F, // vertex 3 - position (top right)
+        +0.0F, +0.0F, +1.0F, // vertex 3 - color
     };
 
     //- Set things up on the GPU
@@ -405,6 +384,17 @@ void App::VertexSpecification()
     //
     glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(GLfloat), // NOLINT
                  vertexData.data(), GL_STATIC_DRAW);
+
+    // Index/Element Buffer Object (IBO i.e. EBO)
+    std::vector<GLuint> const indexBufferData{
+        2, 0, 1, // First triangle
+        3, 2, 1, // Second triangle
+    };
+    glGenBuffers(1, &App::indexBufferObject);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, App::indexBufferObject);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 static_cast<GLsizeiptr>(indexBufferData.size() * sizeof(GLuint)),
+                 indexBufferData.data(), GL_STATIC_DRAW);
 
     //- So far we managed to put the vertex data in GPU's memory. However VBO is not formatted.
     // Now we need to tell OpenGL what form the vertex data in VBO takes.
