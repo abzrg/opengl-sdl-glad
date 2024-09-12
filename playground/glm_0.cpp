@@ -1,4 +1,10 @@
-// Computing dot and cross product
+// Working with vectors
+// - Printing vectors:  glm::to_string(A)
+// - dot product:       glm::dot(A,B)
+// - normalization:     glm::normalize(A)
+// - length/magnitude:  glm::length(A)
+// - cross product:     glm::cross(A,B)
+// - (element-wise) addition/subtraction/division/multiplication
 
 // NOTE: Faster program compilation
 //
@@ -20,6 +26,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 
+#include <cmath>
 #include <iostream>
 
 int main()
@@ -36,23 +43,53 @@ int main()
     std::cout << "B: " << glm::to_string(B) << std::endl;
     std::cout << "M: " << glm::to_string(M) << std::endl;
 
+    std::cout << "\n";
+
+    // Addition and subtraction:
+    glm::vec3 Add = A + B;
+    glm::vec3 Mult = A * B;
+    glm::vec3 Divide = A / B;
+    std::cout << "A + B: " << glm::to_string(Add) << std::endl;
+    std::cout << "A * B: " << glm::to_string(Mult) << std::endl;
+    std::cout << "A / B: " << glm::to_string(Divide) << std::endl;
+
+    std::cout << "\n";
+
     // Access to components
     std::cout << "B.yz: " << glm::to_string(B.yz()) << std::endl;
+
+    std::cout << "\n";
 
     // Dot product
     float d = glm::dot(A, B);
     std::cout << "d = glm::dot(A, B) = " << d << std::endl;
 
+    std::cout << "\n";
+
     // Normalizing vectors
     glm::vec3 B_normalized = glm::normalize(B);
     std::cout << "B normalized: " << glm::to_string(B_normalized) << std::endl;
 
+    std::cout << "\n";
+
+    // Angle between two vectors
+    float dotprod = glm::dot(glm::normalize(A), glm::normalize(B));
+    float angle = std::acosf(dotprod) * 180 / M_PI;
+    std::cout << "Angle between A and B: " << angle << std::endl;
+
+    std::cout << "\n";
+
     // Length of a vector
-    std::cout << "size of the vector B (which is 3 for vec3): " << A.length() << std::endl;
+    std::cout << "size of the vector B (B.length()): " << B.length() << std::endl;
+    std::cout << "Magnitude of the vector B (glm::length(B)): " << glm::length(B) << std::endl;
+
+    std::cout << "\n";
 
     // Cross product
     glm::vec3 C = glm::cross(A, B);
-    std::cout << "C: " << glm::to_string(C) << std::endl;
+    glm::vec3 CNeg = glm::cross(B, A);
+    std::cout << "C = cross(A,B): " << glm::to_string(C) << std::endl;
+    std::cout << "C = cross(B,A): " << glm::to_string(CNeg) << std::endl;
 
     return 0;
 }
